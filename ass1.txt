@@ -1,0 +1,90 @@
+            .data
+N:          .space 8 #reserve space for N
+array:      .space 80
+newLine:    .asciiz  "\n"  #/ I will use it to start a new line
+spc:		.asciiz " "
+val0:       .asciiz "0"
+Prompt:     .asciiz " \nEnter an  integer: "
+getN:		.asciiz "\nEnter an integer from 1-20: "
+            .text
+main:      li  $t0,20  # $t0 for keep track the number of integers to be read.
+            la  $t1,array  #/ loading the starting address of the array
+loopR:     la  $a0, Prompt
+            li  $v0, 4
+            syscall
+            li  $v0,5        # reading an integer
+            syscall
+            sw  $v0,0($t1)  # storing the integer entered
+            add $t0,$t0,-1  # decrement the number of integers by one
+            add $t1,$t1,4  # load the address of the next integer
+            bgtz $t0,loopR # branch to read and store the next integer
+            li $t0,20
+            la $t1,array
+loopPline:  lw $a0,0($t1 )# load an integer from memory location to $a0 
+                  li $v0,1             
+                  syscall    # print the integer
+                   add $t0,$t0,-1
+                   add $t1,$t1,4          
+                   la $a0, newLine #  start a new line
+                   li $v0,4
+                   syscall
+                   bgtz  $t0,loopPline
+		la $t1, array # load the start address of the array
+		li $t0, 20
+#end print on lines
+
+loopPspace:      lw $a0,0($t1 )# load an integer from memory location to $a0 
+                  li $v0,1             
+                  syscall    # print the integer
+                   add $t0,$t0,-1
+                   add $t1,$t1,4          
+                   la $a0, spc #  print a single space
+                   li $v0,4
+                   syscall
+                   bgtz  $t0,loopPspace
+		sub $t1, $t1, 4 # offset the pointer to the last character
+		li $t0, 20 #reset number of characters to read
+#end print with spaces
+
+loopPbkw:       lw $a0,0($t1 )# print the array in reverse order
+                  li $v0,1             
+                  syscall    # print the integer
+                   add $t0,$t0,-1
+                   add $t1,$t1,-4 # skip backwards one integer
+                   la $a0, spc #  separate each int by a space
+                   li $v0,4
+                   syscall
+                   bgtz  $t0,loopPbkw
+#end reverse function
+
+		la  $a0, getN
+                   li  $v0, 4
+                   syscall
+                   li  $v0,5        # reading an integer
+                   syscall
+                   move $5, $t1 # put N in $5
+		    la $7, N #load address to write to N
+		    sw  $5,0($7)  # storing the integer entered
+#change from ascii to int
+            add $5, $5, -48 # change from ascii value to actual value
+#end change from ascii to int
+		    li $6, 20 #reset number of characters to read
+		    la $t1, array # load the start address of the array
+# $5 = current value of N, $6 = characters left in array to read, $7 = address of value N
+loopPN:     lw $a0,0($t1 )# load an integer from memory location to $a0 
+            li $v0,1             
+            syscall    # print the integer
+            add $5,$5,-1
+		    add $6, $6, -1
+            add $t1,$t1,4          
+            bgtz $5, br1
+		    la $a0, newLine
+		    lw $5, 0($7)
+            add $5, $5, -48 # change from ascii value to actual value
+		    b br2
+br1:        la $a0, spc #  start a new line
+br2:        li $v0,4
+            syscall
+            bgtz  $6,loopPN
+            li $v0,10
+            syscall
