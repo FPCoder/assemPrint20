@@ -1,7 +1,7 @@
             .data
 N:          .space 8 #reserve space for N
-array:      .space 80
-newLine:    .asciiz  "\n"  #/ I will use it to start a new line
+array:		.space 80
+newLine:	.asciiz  "\n"  #/ I will use it to start a new line
 spc:		.asciiz " "
 val0:       .asciiz "0"
 Prompt:     .asciiz " \nEnter an  integer: "
@@ -44,6 +44,9 @@ loopPspace:      lw $a0,0($t1 )# load an integer from memory location to $a0
                    bgtz  $t0,loopPspace
 		sub $t1, $t1, 4 # offset the pointer to the last character
 		li $t0, 20 #reset number of characters to read
+                   la $a0, newLine #  start a new line
+                   li $v0,4
+                   syscall
 #end print with spaces
 
 loopPbkw:       lw $a0,0($t1 )# print the array in reverse order
@@ -55,36 +58,35 @@ loopPbkw:       lw $a0,0($t1 )# print the array in reverse order
                    li $v0,4
                    syscall
                    bgtz  $t0,loopPbkw
+                   la $a0, newLine #  start a new line
+                   li $v0,4
+                   syscall
 #end reverse function
 
 		la  $a0, getN
-                   li  $v0, 4
-                   syscall
-                   li  $v0,5        # reading an integer
-                   syscall
-                   move $5, $t1 # put N in $5
-		    la $7, N #load address to write to N
-		    sw  $5,0($7)  # storing the integer entered
-#change from ascii to int
-            add $5, $5, -48 # change from ascii value to actual value
-#end change from ascii to int
-		    li $6, 20 #reset number of characters to read
-		    la $t1, array # load the start address of the array
+                li  $v0, 4
+                syscall
+                li  $v0,5        # reading an integer
+                syscall
+                move $5, $v0 # put N in $5
+		la $7, N #load address to write to N
+		sw  $5,0($7)  # storing the integer entered
+		li $6, 20 #reset number of characters to read
+		la $t1, array # load the start address of the array
 # $5 = current value of N, $6 = characters left in array to read, $7 = address of value N
-loopPN:     lw $a0,0($t1 )# load an integer from memory location to $a0 
-            li $v0,1             
-            syscall    # print the integer
-            add $5,$5,-1
-		    add $6, $6, -1
-            add $t1,$t1,4          
-            bgtz $5, br1
-		    la $a0, newLine
-		    lw $5, 0($7)
-            add $5, $5, -48 # change from ascii value to actual value
-		    b br2
-br1:        la $a0, spc #  start a new line
-br2:        li $v0,4
-            syscall
-            bgtz  $6,loopPN
-            li $v0,10
-            syscall
+loopPN:     	lw $a0,0($t1 )# load an integer from memory location to $a0 
+            	li $v0,1             
+            	syscall    # print the integer
+            	add $5,$5,-1
+		add $6, $6, -1
+            	add $t1,$t1,4          
+            	bgtz $5, br1
+		la $a0, newLine
+		lw $5, 0($7)
+		b br2
+br1:        	la $a0, spc #  start a new line
+br2:        	li $v0,4
+            	syscall
+            	bgtz  $6,loopPN
+            	li $v0,10
+            	syscall
